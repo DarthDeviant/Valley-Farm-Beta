@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valley Farm</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Baloo+2:wght@700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- AUTH SCREEN / START MENU -->
+<div id="auth-screen" class="screen active">
+  <div id="auth-bg-stars"></div>
+
+  <!-- LAYER 1: Main Start Menu -->
+  <div id="layer-start" class="menu-layer ml-active">
+    <div class="start-logo">🌾</div>
+    <div class="start-game-title">Valley Farm</div>
+    <div class="start-game-sub">A peaceful farming life awaits</div>
+    <div class="menu-btns">
+      <button class="menu-btn menu-btn-play" onclick="goLayer('layer-mode')">▶&nbsp; Play</button>
+      <button class="menu-btn" onclick="goLayer('layer-options-menu')">⚙&nbsp; Options</button>
+      <button class="menu-btn menu-btn-danger" onclick="exitToTitle()">✕&nbsp; Exit</button>
+    </div>
+  </div>
+
+  <!-- LAYER 2: Mode Select -->
+  <div id="layer-mode" class="menu-layer">
+    <button class="menu-back" onclick="goLayer('layer-start')">← Back</button>
+    <div class="menu-heading">Select Mode</div>
+    <div class="menu-btns">
+      <button class="menu-btn" onclick="goLayer('layer-farm')">👤&nbsp; Single Player</button>
+      <button class="menu-btn menu-btn-dim">👥&nbsp; Multiplayer<span class="coming-soon">Coming Soon</span></button>
+    </div>
+  </div>
+
+  <!-- LAYER 3: Farm Select -->
+  <div id="layer-farm" class="menu-layer">
+    <button class="menu-back" onclick="goLayer('layer-mode')">← Back</button>
+    <div class="menu-heading">Single Player</div>
+    <div class="menu-btns">
+      <button class="menu-btn menu-btn-play" onclick="goLayer('layer-new')">🌱&nbsp; New Profile</button>
+      <button class="menu-btn" onclick="goLayer('layer-load')">📂&nbsp; Old Profile</button>
+    </div>
+    <div id="recent-farms-wrap"></div>
+  </div>
+
+  <!-- LAYER 4a: New Farm -->
+  <div id="layer-new" class="menu-layer">
+    <button class="menu-back" onclick="goLayer('layer-farm')">← Back</button>
+    <div class="menu-heading">🌱 New Farm</div>
+    <div class="menu-heading-sub">Create your farmer & start fresh</div>
+    <div class="menu-form">
+      <label>Farmer Name</label>
+      <input id="new-name" type="text" placeholder="e.g. Old MacDonald" autocomplete="username">
+      <label>Password <span style="opacity:.45;font-size:10px;text-transform:none;letter-spacing:0">(optional, min 4 chars)</span></label>
+      <input id="new-pass" type="password" placeholder="Leave blank for no password" onkeydown="if(event.key==='Enter')createFarm()">
+      <div id="new-error" class="menu-error"></div>
+      <button class="menu-btn menu-btn-create" onclick="createFarm()">Start Farming 🌾</button>
+    </div>
+  </div>
+
+  <!-- LAYER 4b: Load Farm -->
+  <div id="layer-load" class="menu-layer">
+    <button class="menu-back" onclick="goLayer('layer-farm')">← Back</button>
+    <div class="menu-heading">📂 Load Farm</div>
+    <div class="save-list" id="load-list"></div>
+    <div id="load-empty" class="menu-empty" style="display:none">No saved farms found.<br>Start a <b>New Farm</b> to begin!</div>
+  </div>
+
+  <!-- LAYER 4c: Password prompt for loading -->
+  <div id="layer-passcheck" class="menu-layer">
+    <button class="menu-back" onclick="goLayer('layer-load')">← Back</button>
+    <div class="menu-heading" id="passcheck-title">🔐 Enter Password</div>
+    <div class="menu-heading-sub" id="passcheck-sub">This farm is password protected</div>
+    <div class="menu-form">
+      <label>Password</label>
+      <input id="pass-check-input" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')submitPassCheck()">
+      <div id="pass-check-error" class="menu-error"></div>
+      <button class="menu-btn menu-btn-create" onclick="submitPassCheck()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- LAYER 5: Options -->
+  <div id="layer-options-menu" class="menu-layer">
+    <button class="menu-back" onclick="goLayer('layer-start')">← Back</button>
+    <div class="menu-heading">⚙ Options</div>
+    <div style="width:100%;max-width:300px;display:flex;flex-direction:column;gap:0">
+      <div class="start-opt-row">
+        <div><div class="start-opt-label">🌙 Dark Mode</div><div class="start-opt-desc">Easier on the eyes</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-dark-start" onchange="toggleDark(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="start-opt-row">
+        <div><div class="start-opt-label">🎮 Retro Theme</div><div class="start-opt-desc">Pixel-art style</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-retro-start" onchange="toggleRetro(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="start-opt-row">
+        <div><div class="start-opt-label">🔔 Notifications</div><div class="start-opt-desc">Show popup messages</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-toasts-start" checked onchange="S.toasts=this.checked;saveS()"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="start-opt-row">
+        <div><div class="start-opt-label">🔊 Sounds</div><div class="start-opt-desc">Web Audio effects</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-sounds-start" checked onchange="S.sounds=this.checked;saveS()"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAP FULLSCREEN OVERLAY -->
+<div id="map-fullscreen">
+  <div class="mf-header">
+    <button class="mf-back" onclick="closeMapScreen()">← Back to Farm</button>
+    <div class="mf-title">🗺 Land Map</div>
+    <div id="mf-rent-info" style="font-size:11px;font-weight:700;color:var(--gold)"></div>
+  </div>
+  <div class="mf-body" id="mf-body" style="padding:0;overflow:hidden"></div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" class="screen">
+  <div id="ambient-layer"></div>
+  <div id="hud">
+    <div class="hud-pill">📅 <span id="hud-day">Day 1</span></div>
+    <div class="hud-pill" id="season-pill">🌸 <span id="hud-season">Spring</span></div>
+    <div class="hud-pill">📆 <span id="hud-year">Yr.1</span></div>
+    <div class="hud-pill"><span id="weather-em">☀️</span> <span id="hud-weather">Sunny</span></div>
+    <div class="hud-pill">
+      <span id="dn-icon" style="font-size:14px">☀️</span>
+      <span id="hud-time">6:00 AM</span>
+      <div class="bar-wrap"><div class="bar-fill" id="time-bar" style="width:0%;background:#f59e0b"></div></div>
+    </div>
+    <div class="hud-pill">⚡<div class="bar-wrap"><div class="bar-fill" id="energy-bar" style="width:100%;background:#22c55e"></div></div><span id="hud-energy" style="font-size:11px">100</span></div>
+    <div class="hud-pill gold-pill">💰 <span id="hud-gold">500g</span></div>
+    <span id="hud-pending" style="font-size:11px;color:#16a34a;font-weight:700"></span>
+    <div class="hud-pill" id="hud-land-pill" style="display:none;cursor:pointer;border-color:#86efac" onclick="openMapScreen()" title="Click to view map">🗺 <span id="hud-land-name">Home Farm</span></div>
+    <div class="hud-pill" style="gap:5px"><div class="autosave-dot"></div><span style="font-size:10px;color:var(--text-soft);font-weight:700">AUTO</span></div>
+  </div>
+
+  <div id="main" style="position:relative">
+    <div id="land-banner"></div>
+    <div id="farm-wrap"><div id="farm-grid"></div></div>
+    <div id="side">
+      <div class="tabs">
+        <button class="tab-btn" data-tab="inv" onclick="setTab('inv')">🎒 Bag</button>
+        <button class="tab-btn" data-tab="shop" onclick="setTab('shop')">🛒 Shop</button>
+        <button class="tab-btn active" data-tab="upgrades" onclick="setTab('upgrades')">⚒ Upgrades</button>
+        <button class="tab-btn" data-tab="map" onclick="setTab('map')">🗺 Map</button>
+      </div>
+      <div id="side-content"></div>
+    </div>
+  </div>
+
+  <div id="toolbar">
+    <button class="tool-btn" onclick="openHelp()" title="How to play" style="font-size:15px;padding:7px 11px">❓</button>
+    <button class="tool-btn active" id="tool-hoe" onclick="setTool('hoe')">⛏ Hoe</button>
+    <button class="tool-btn" id="tool-water" onclick="setTool('water')">💧 Water</button>
+    <button class="tool-btn" id="tool-seed" onclick="setTool('seed')">🌱 Seeds</button>
+    <select id="seed-select" style="display:none" onchange="G.seed=this.value"></select>
+    <button class="tool-btn" id="tool-shovel" onclick="setTool('shovel')">🪱 Dig Up</button>
+    <button class="tool-btn" id="tool-scythe" onclick="setTool('scythe')">🌾 Scythe</button>
+    <button id="tool-harvestall" onclick="scytheAll()">⚡ Harvest All</button>
+    <button class="tool-btn" id="tool-deco" onclick="setTool('deco')">🎨 Deco</button>
+    <select id="deco-select" style="display:none" onchange="G.deco=this.value">
+      <option value="path">🟫 Path</option>
+      <option value="fence">🪵 Fence</option>
+      <option value="flower">🌸 Flowers</option>
+      <option value="lamp">🏮 Lamp (lights area)</option>
+      <option value="sign">🪧 Sign</option>
+      <option value="rock">🪨 Rock</option>
+      <option value="scarecrow">🧍 Scarecrow</option>
+    </select>
+    <div class="spacer"></div>
+    <button class="tool-btn" id="bag-btn" onclick="toggleBag()">🎒 Bag</button>
+    <button id="pause-btn" onclick="openPause()">⏸ Menu</button>
+    <button id="sleep-btn" onclick="doSleep()">🌙 Sleep</button>
+  </div>
+</div>
+
+<!-- Bottom sheet backdrop -->
+<div id="sheet-bg" onclick="closeSheet()"></div>
+
+<!-- Bottom sheet panel -->
+<div id="bottom-sheet">
+  <div class="sheet-handle-wrap" onclick="closeSheet()">
+    <div class="sheet-handle"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="inv" onclick="setTab('inv')">🎒 Bag</button>
+    <button class="tab-btn" data-tab="shop" onclick="setTab('shop')">🛒 Shop</button>
+    <button class="tab-btn" data-tab="upgrades" onclick="setTab('upgrades')">⚒ Upgrades</button>
+    <button class="tab-btn" data-tab="map" onclick="setTab('map')">🗺 Map</button>
+  </div>
+  <div id="sheet-content"></div>
+</div>
+
+<!-- Swipe-up hint (mobile only) -->
+<div id="swipe-hint" onclick="openSheet()">↑ Bag &amp; Shop</div>
+
+<div id="toast-wrap"></div>
+
+<div id="sleep-overlay">
+  <div class="sleep-moon">🌙</div>
+  <div class="sleep-text">Resting...</div>
+  <div class="sleep-sub">Crops grow overnight ✨</div>
+</div>
+
+<!-- TELEPORT OVERLAY -->
+<div id="teleport-overlay">
+  <div class="tp-portal-ring tp-ring1"></div>
+  <div class="tp-portal-ring tp-ring2"></div>
+  <div class="tp-portal-ring tp-ring3"></div>
+  <div class="tp-em" id="tp-em">🌿</div>
+  <div class="tp-title" id="tp-title">Traveling to Meadow Plot...</div>
+  <div class="tp-sub" id="tp-sub">📦 Packing your tools...</div>
+  <div class="tp-bar-wrap"><div class="tp-bar" id="tp-bar"></div></div>
+  <div class="tp-tip" id="tp-tip">Each land has its own farm grid!</div>
+</div>
+
+<!-- CITY SCREEN -->
+<div id="city-screen">
+  <div class="city-header">
+    <button class="city-close-btn" onclick="closeCityScreen()">← Back to Farm</button>
+    <div class="city-header-title">🏙️ City District</div>
+    <div id="city-gold-disp" class="city-header-gold">💰 0g</div>
+  </div>
+  <div class="city-tabs">
+    <button class="city-tab-btn active" data-ctab="market" onclick="setCityTab('market')">📊 Market</button>
+    <button class="city-tab-btn" data-ctab="portfolio" onclick="setCityTab('portfolio')">🎒 Portfolio</button>
+    <button class="city-tab-btn" data-ctab="company" onclick="setCityTab('company')">🏢 My Company</button>
+  </div>
+  <div id="city-body"></div>
+</div>
+
+<!-- HELP OVERLAY -->
+<div id="help-overlay">
+  <div class="help-card">
+    <div class="help-glow"></div>
+    <button class="help-skip" onclick="closeHelp()">Skip ✕</button>
+    <div class="help-step-label" id="help-step-label">Step 1 of 10</div>
+    <span class="help-emoji" id="help-emoji">🌾</span>
+    <div class="help-title" id="help-title">Welcome!</div>
+    <div class="help-body" id="help-body"></div>
+    <div class="help-tip" id="help-tip"></div>
+    <div class="help-dots" id="help-dots"></div>
+    <div class="help-nav">
+      <button class="help-back-btn" id="help-prev" onclick="helpNav(-1)" style="display:none">←</button>
+      <button class="help-next-btn" id="help-next" onclick="helpNav(1)">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENT POPUP -->
+<div id="achieve-popup">
+  <div class="achieve-label">🏆 Achievement Unlocked!</div>
+  <span class="achieve-icon" id="achieve-icon">💰</span>
+  <div class="achieve-name" id="achieve-name"></div>
+  <div class="achieve-desc" id="achieve-desc"></div>
+</div>
+
+<!-- cactus popup removed -->
+
+<!-- PAUSE MENU -->
+<div id="pause-overlay">
+  <div class="pause-card">
+    <div class="pause-title">⏸ Paused</div>
+    <div class="pause-sub" id="pause-sub">Valley Farm</div>
+    <div class="pause-row">
+      <div><div class="pause-label">🌙 Dark Mode</div><div class="pause-desc">Easier on the eyes</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-dark" onchange="toggleDark(this.checked)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🎮 Retro Theme</div><div class="pause-desc">Pixel-art style</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-retro" onchange="toggleRetro(this.checked)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🔔 Notifications</div><div class="pause-desc">Show popup messages</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-toasts" checked onchange="S.toasts=this.checked"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🔊 Sounds</div><div class="pause-desc">Web Audio sound effects</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-sounds" checked onchange="S.sounds=this.checked;saveS()"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">⚡ Energy Cost</div><div class="pause-desc">Actions use energy</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-energy" checked onchange="S.energyCost=this.checked"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🌧️ Random Weather</div><div class="pause-desc">Rain auto-waters crops</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-weather" checked onchange="S.weather=this.checked"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-btn-row">
+      <button class="pause-action" onclick="closePause()">▶ Resume</button>
+      <button class="pause-action" onclick="saveAll();toast('Saved! 💾','success');closePause()">💾 Save</button>
+      <button class="pause-action danger" onclick="doLogout()">↩ Sign Out</button>
+    </div>
+    <div class="pause-io">
+      <button class="pause-io-btn" onclick="exportSave()">📤 Export Save</button>
+      <button class="pause-io-btn" onclick="importSave()">📥 Import Save</button>
+    </div>
+    <button class="pause-close" onclick="closePause()">Continue Farming 🌾</button>
+  </div>
+</div>
+
+<script src="script.js" defer> </script>
+<script src="winter.js" defer></script> 
+<script src="winterpatch.js" defer></script> 
+<script src="patcher.js" defer></script>
+<script src="fall_town.js" defer></script>
+<script src="mobilepatch.js" defer></script>
+<script src="mpfix.js" defer></script>
+<script src="mpfix2.js" defer></script>
+<script src="mpfix3.js" defer></script>
+<script src="mpfix4.js" defer></script>
+<script src="bu1.js" defer></script>
+<script src="bu2.js" defer></script>
+<script src="bu3.js" defer></script>
+<script src="bu4.js" defer></script>
+<script src="fix1.js" defer></script>
+<script src="fix2.js" defer></script>
+<script src="./update/tutoril/tut.js" defer></script>
+<!-- <script src="./updates/big-update/bu.js" defer></script> 
+<script src="./updates/big-update/bu5.js" defer></script>
+<script src="./updates/big-update/bu6.js" defer></script> -->
+</body>
+</html>
