@@ -3448,7 +3448,7 @@ if (document.readyState === 'loading') {
   style.id = 'patch-v1-1-8-css';
   style.textContent = [
     '/* PATCH v1.1.8 — Toast opacity 70% */',
-    '.toast { opacity: 0.8; }',
+    '.toast { opacity: 0.89; }',
     '',
     '/* PATCH v1.1.8 — Wider bag panel (PC only) */',
     '@media (min-width: 681px) {',
