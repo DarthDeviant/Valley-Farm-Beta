@@ -1,4 +1,13 @@
 /* ════════════════════════════════════════════════════
+   update.js — merged patch bundle
+   generated : 2026-06-07
+   patches   : 2
+   sources   : update1.js, patch_v1.1.8.js
+   ════════════════════════════════════════════════════ */
+
+
+/* ────────────────────── update1.js ────────────────────── */
+/* ════════════════════════════════════════════════════
    update1.js — merged patch bundle
    generated : 2026-06-07
    patches   : 4
@@ -3419,4 +3428,63 @@ if (document.readyState === 'loading') {
   init();
 }
 
+})();
+
+
+/* ────────────────────── patch_v1.1.8.js ────────────────────── */
+(function () {
+  'use strict';
+  console.log('[Patch v1.1.8] Applying...');
+
+  /* ─────────────────────────────────────────────────────────────
+   * 1. INJECT CSS
+   *    · Toast opacity → 70%
+   *    · Bag/menu side panel wider on PC only (min-width: 681px)
+   *      calc(100vw - 791px) leaves exactly the farm grid width
+   *      (14 × 52px tiles + 13 × 3px gaps = 767px + 24px padding)
+   *      untouched. Mobile (#side is display:none ≤680px) unchanged.
+   * ───────────────────────────────────────────────────────────── */
+  var style = document.createElement('style');
+  style.id = 'patch-v1-1-8-css';
+  style.textContent = [
+    '/* PATCH v1.1.8 — Toast opacity 70% */',
+    '.toast { opacity: 0.7; }',
+    '',
+    '/* PATCH v1.1.8 — Wider bag panel (PC only) */',
+    '@media (min-width: 681px) {',
+    '  #side {',
+    '    width: calc(100vw - 791px) !important;',
+    '    min-width: 290px;',
+    '    max-width: 560px;',
+    '  }',
+    '}'
+  ].join('\n');
+  document.head.appendChild(style);
+
+  /* ─────────────────────────────────────────────────────────────
+   * 2. SUPPRESS FALL TOWN INIT TOAST
+   *    FallTownUpdate fires its welcome toast after 1 800 ms.
+   *    We wrap window.toast now, drop anything containing
+   *    'Fall Town Update', then restore the real function at 3 s
+   *    so all subsequent in-game toasts work normally.
+   * ───────────────────────────────────────────────────────────── */
+  var _origToast = window.toast;
+  if (typeof _origToast === 'function') {
+    window.toast = function (msg, type, dur) {
+      if (typeof msg === 'string' && msg.indexOf('Fall Town Update') !== -1) {
+        return; // silently drop fall-town init toast
+      }
+      return _origToast.apply(this, arguments);
+    };
+
+    setTimeout(function () {
+      window.toast = _origToast;
+    }, 3000);
+
+    console.log('[Patch v1.1.8] Fall Town init toast suppressed.');
+  } else {
+    console.warn('[Patch v1.1.8] window.toast not ready — toast suppression skipped.');
+  }
+
+  console.log('[Patch v1.1.8] Done.');
 })();
