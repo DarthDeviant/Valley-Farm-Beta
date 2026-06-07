@@ -1455,7 +1455,7 @@ body.retro .quest-submit-btn,body.retro .recipe-cook-btn,body.retro .preserve-bt
       toast(
         isFirstFall
           ? '🍂 Fall Town Update is here! Visit the 🏘️ Town button to explore.'
-          : '🏘️ Fall Town Update loaded! The Town awaits you.',
+          : '🏘️ This is your Farm!',
         'success', 4500
       );
     }, 1800);
